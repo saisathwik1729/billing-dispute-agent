@@ -54,13 +54,14 @@ reference ids. That is about 4,000 tokens for the samples.
 - Staleness and reopening.
 - The REST API, the React UI and its design system.
 - Sample scenarios with hand-checkable figures.
-- 33 tests, Docker, Render and CI config, and these docs.
+- 34 tests, Docker, Render and CI config, and these docs.
+- After deployment: the backup-model feature and the agent-trace fix, prompted by issues found in live verification.
 
 I reviewed the design decisions, the sample figures and the UI, and I am responsible for the submission.
 
 ## 4. Important agent mistakes, and how they were caught
 
-These happened during the build and were fixed before submission.
+The first group happened while building; the last four surfaced during live verification of the deployment. All were fixed or handled before submission.
 
 | Mistake | How it was caught | Fix |
 |---|---|---|
@@ -73,6 +74,10 @@ These happened during the build and were fixed before submission.
 | A guardrail test passed by coincidence (120.00 was "allowed" only because the storage quantity is 120) | Re-reading the test while documenting it | The test now uses the engine's own figure (184.00) |
 | Directory creation used bash brace expansion under `sh`, creating a literal `{engine,…}` folder | Listing the tree | Recreated the directories explicitly and removed the stray folder |
 | A `pkill -f` pattern matched the agent's own shell and killed it | The command returned no output | Switched to non-self-matching process lookups |
+| The default Gemini model (`gemini-2.5-flash`) was retired for new API users, so the first live run fell back to the deterministic analysis | The agent trace showed the provider's HTTP 404 message, naming the replacement model | Switched to `gemini-3.8-flash` in code, config and tests; the fallback kept the app usable throughout |
+| `gemini-3.8-flash` then returned HTTP 503 "high demand" on several runs; the original design had a single model, so every overload became a fallback | Agent trace (`503 UNAVAILABLE`) on consecutive runs | Added `LLM_FALLBACK_MODELS`: a busy (429/5xx) or retired (404) model hands over to backup models in order, but a rejected key does not; covered by a new test |
+| The *Agent trace* tab re-fetched the previously selected run on every progress poll, so it flickered while an analysis ran | Seen on the live app during a run | The trace now follows the running run and loads a run only when the selection changes |
+| In the live Initech case, the backup model (`gemini-3.5-flash-lite`) claimed the account manager's email supported graduated pricing; the email says volume | Human review of the finding against the cited note `EVD-FBF8558B` | Reviewer edited the finding (original wording preserved in the history); the credit option built on the wrong reading was never approved because approval requires accepted findings |
 
 ## 5. Suggestions rejected on purpose
 
@@ -93,20 +98,32 @@ These happened during the build and were fixed before submission.
 
 1. **Hand calculation.** Every sample figure was worked out by hand first (see the README table) and then asserted
    in `test_engine.py`.
-2. **Automated tests.** 33 tests pass on SQLite and on PostgreSQL 16. They include six threads approving the same
+2. **Automated tests.** 34 tests pass on SQLite and on PostgreSQL 16. They include six threads approving the same
    credit at once (exactly one succeeds), a model returning invalid JSON then hallucinated citations and an
-   invented figure, and each simulated tool failure.
+   invented figure, each simulated tool failure, and a busy or retired model handing over to a backup.
 3. **Browser review.** The UI was rendered headlessly and screenshots of every tab were reviewed. Four visual and
    semantic defects were found and fixed this way (see section 4).
 4. **Container check.** The container's file layout and start command were run locally against Postgres: SPA deep
    links, static assets, JSON 404s for unknown API routes, and the health endpoint.
 5. **Prompt size and shape.** Measured the prompt for each sample, and confirmed the scripted model client
    receives the same `<case_context>` the real providers receive.
-6. **Live model check (after deployment).** The provider HTTP clients could not be exercised from the build
-   sandbox, which had no API key. After deploying, I verified:
-   - `/api/health` reports `llm.configured: true`.
-   - The Acme sample's summary badge reads *AI analysis, &lt;provider&gt; &lt;model&gt;*.
-   - *Agent trace → Model analysis* shows token counts and status `ok`.
-   - The guardrail line shows citations checked and few or none removed.
-
-   Results: `<fill in after deploying: model used, run status, citations removed, any recategorizations>`
+6. **Live verification on the deployment** (https://billing-dispute-agent.onrender.com, 3 October 2026). The
+   provider HTTP clients could not be exercised from the build sandbox, which had no API key, so every flow was
+   checked by hand on the hosted app, on free tiers (Render, Neon Postgres, Gemini):
+   - `/api/health` reported `database: ok`, provider `gemini`, `llm.configured: true`.
+   - **Provider issues found and handled.** The first runs exposed two real problems: `gemini-2.5-flash` returned
+     HTTP 404 (retired for new users) and `gemini-3.8-flash` then returned HTTP 503 (high demand). Each time, the
+     run finished *completed with warnings* using the deterministic fallback, and the agent trace recorded the
+     exact provider message. This led to the model switch and to configurable backup models (section 4).
+   - **Acme.** Run `RUN-1DECBB94` completed with `gemini/gemini-3.8-flash` in about 15 seconds: 3 findings, 17
+     citations checked, 0 removed, 0 recategorized, 0 unverified figures. The model correctly classed the storage
+     complaint as not supported by evidence (peak-based billing under R3). Approving a credit was refused until the
+     findings were accepted. After acceptance, the 412.00 credit was approved (`ADJ-383151A6`), and both options
+     covering the same discrepancies then showed 0.00 and "Nothing left to adjust". The case was resolved.
+   - **Globex.** The AI analysis offered a 120.00 credit (200.00 error minus the 80.00 credit already in the payment
+     history), and explained that the omitted 200.00 minimum-commitment true-up leaves the net position unchanged.
+     A run with the model failure simulated finished with the deterministic fallback and the same figures. The
+     next run fell back automatically to the backup model `gemini-3.5-flash-lite` (11 citations, 0 removed).
+   - **Initech.** The engine priced 8 scenarios from −100.00 to +390.00, and the AI listed payment history as
+     missing evidence. Adding the account manager's email marked the analysis stale until it was re-run. The
+     re-run, answered by the backup model, misread the email; the reviewer corrected the finding (section 4).

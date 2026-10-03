@@ -6,7 +6,8 @@ from contract-interpretation questions, ask for missing evidence, and propose re
 the invoice line, usage event or contract rule behind it. A human reviewer accepts, edits or rejects every finding
 and approves any (mock) credit.
 
-- **Live app:** `<add your Render URL here>`
+- **Live app:** https://billing-dispute-agent.onrender.com
+- **Repository:** https://github.com/saisathwik1729/billing-dispute-agent
 - **Reviewer sign-in:** see the submission remarks (credentials are set by environment variable, never committed)
 - **Three sample disputes** are pre-loaded, so the app can be evaluated without preparing data.
 
@@ -30,6 +31,10 @@ and approves any (mock) credit.
 ---
 
 ## Five-minute walkthrough for reviewers
+
+The live database already contains the states left by live verification: Acme is resolved with a 412.00 credit,
+Globex and Initech are in review, and Initech has a reviewer-corrected AI finding. To try every step from scratch,
+click **New case**, then **Open** next to a sample. This creates a fresh copy with its evidence.
 
 1. **Sign in** with the credentials from the remarks.
 2. **Acme Logistics — "API overage and missing loyalty discount".** Click *Run analysis* and watch the seven agent
@@ -162,7 +167,7 @@ Hand-checked figures for the samples (also asserted in the tests):
 | 1 | `collect_evidence` | Loads active evidence; merges usage and payment files | A failing usage store or payment ledger is recorded; the run continues without it |
 | 2 | `check_missing_evidence` | Deterministic gap check (invoice, contract, usage for usage-priced SKUs, payments, dispute) | — |
 | 3 | `recalculate_invoice` | Runs the engine and stores a `CalculationRecord` | Run continues; no amounts are offered, and the AI is told the calculation is unavailable |
-| 4 | `ai_analysis` | One structured LLM call (temperature 0, JSON); one repair attempt if the JSON is invalid; retries with backoff on 429/5xx/timeouts | Deterministic `fallback_analysis` step produces findings and options in the same shape |
+| 4 | `ai_analysis` | One structured LLM call (temperature 0, JSON); one repair attempt if the JSON is invalid; retries with backoff on 429/5xx/timeouts; if the model is busy (429/5xx) or retired (404), the configured backup models are tried in order | Deterministic `fallback_analysis` step produces findings and options in the same shape |
 | 5 | `ground_and_validate` | Citation, category and number guardrails; fills gaps from the fallback | — |
 | 6 | `price_resolution_options` | Engine prices every option | — |
 | 7 | `save_analysis` | Persists analysis, findings, options; detects evidence changing mid-run | Run marked `failed`, error recorded |
@@ -206,12 +211,12 @@ instructions, to resist prompt injection.
 | Compare original and recalculated invoice | *Invoice check*, under any combination of readings |
 | Preserve dispute and decision history | `case_events` (append-only), *History* tab |
 | Prevent duplicate credits | Idempotency key, remaining-balance accounting (including ledger credits), DB unique constraint, per-case lock / `SELECT … FOR UPDATE` |
-| Handle partial tool failure | Orchestrator degradation per step; *Test failure handling* lets reviewers trigger it |
+| Handle partial tool failure | Orchestrator degradation per step; automatic backup models for a busy or retired LLM; *Test failure handling* lets reviewers trigger failures |
 | Record calculations separately | `calculations` table vs `analyses` and `findings` |
 | Case reopening on new evidence | `services/cases.py::_on_evidence_changed` |
 | Show stale conclusions | Analysis fingerprint; per-finding `stale_reasons` by evidence type; stale banner; approvals paused |
 | Loading / empty / validation / success / failure states | Skeletons, empty states with next actions, field-level and server validation details, toasts, error callouts with retry |
-| Structured logs, focused tests | JSON logs with request and run ids; 33 tests |
+| Structured logs, focused tests | JSON logs with request and run ids; 34 tests |
 
 ---
 
@@ -255,18 +260,20 @@ python -m pytest -q                                   # SQLite
 TEST_DATABASE_URL=postgresql://user:pw@localhost/db python -m pytest -q   # same suite on Postgres
 ```
 
-33 tests, all passing on SQLite and PostgreSQL 16. CI (`.github/workflows/ci.yml`) runs both, plus the frontend
+34 tests, all passing on SQLite and PostgreSQL 16. CI (`.github/workflows/ci.yml`) runs both, plus the frontend
 type-check and build.
 
 | File | Covers |
 |---|---|
 | `test_engine.py` | Tier maths; half-up rounding without floats; all three samples' figures; confirmed-vs-interpretation split when every reading overcharges; invoice-total mismatch; unsupported charges; determinism; snapshot peak billing |
 | `test_parser.py` | JSON error positions; field-level errors; money never becomes float; bad CSV rows skipped with warnings; rule validation |
-| `test_resolution_and_grounding.py` | Prior-credit and prior-adjustment deduction; conservative default reading; credit ceiling; fake citations removed; category correction; invented figures flagged; model-supplied amounts ignored |
+| `test_resolution_and_grounding.py` | Prior-credit and prior-adjustment deduction; conservative default reading; credit ceiling; fake citations removed; category correction; invented figures flagged; model-supplied amounts ignored; provider wiring; backup models used when the main model is busy or retired, but not for a rejected key |
 | `test_api_workflow.py` | Auth; full workflow; idempotent replay; duplicate refusal; reopen and stale findings; stale analysis blocks approval; simulated usage, ledger, calculator and model failures; unverified-payments acknowledgement; partial approvals; invalid model JSON repaired; ungrounded findings unacceptable; edit preserves original; validation and duplicate evidence; **six concurrent approvals create exactly one adjustment**; one run at a time |
 
 The real LLM path is exercised by the same pipeline with a scripted client (`MockClient`), including malformed and
-hallucinating responses. The provider HTTP clients are thin; verify them on the deployment (see `AGENT_USAGE.md`).
+hallucinating responses. The live deployment was then verified end to end against Gemini. That verification
+surfaced a retired model (HTTP 404), provider overload (HTTP 503) and a model misreading a supporting note, and
+showed how each was handled; see `AGENT_USAGE.md`, sections 4 and 6.
 
 ---
 
@@ -285,13 +292,16 @@ on restart, so a hosted database is needed for persistence.
    - `LLM_API_KEY`: your Gemini key
    - `REVIEWER_ACCOUNTS`: e.g. `reviewer:<a password you choose>`
 
-   `AUTH_SECRET` is generated for you.
+   `AUTH_SECRET` is generated for you. Then, under the service's *Environment*, add
+   `LLM_FALLBACK_MODELS` (e.g. `gemini-3.7-flash,gemini-3.5-flash-lite`) and set `LLM_MAX_RETRIES` to `1`. A
+   busy free-tier model then hands over to a backup quickly instead of falling back to the deterministic analysis.
+   Pick backups from the models your key can use (AI Studio → Rate Limit).
 5. **Verify.** When the deploy is live, open `https://<app>.onrender.com/api/health`. Check that `database` is `ok`
    and `llm.configured` is `true`. Then sign in and run the Acme sample: the summary badge should read
    *AI analysis, &lt;provider&gt; &lt;model&gt;*, not *Deterministic fallback*.
 
-Free Render services sleep after about 15 minutes idle; the first request then takes about 30–60 seconds. Open the
-app shortly before review, or use a paid instance.
+Free Render services sleep after about 15 minutes idle; the first request then takes about 30–60 seconds. The live
+deployment uses a free UptimeRobot monitor on `/api/health` to stay awake.
 
 ---
 
@@ -304,6 +314,8 @@ All configuration is by environment variable; see `.env.example`.
 | `DATABASE_URL` | SQLAlchemy URL; `postgres://` and `postgresql://` are normalised to psycopg 3 |
 | `LLM_PROVIDER` | `gemini` (default, free), `anthropic`, `openai` (any OpenAI-compatible endpoint) or `mock` |
 | `LLM_MODEL`, `LLM_API_KEY`, `LLM_BASE_URL` | Model, key, and (for `openai`) the endpoint |
+| `LLM_FALLBACK_MODELS` | Comma-separated backup models, tried in order when the main model is busy (429/5xx) or retired (404) |
+| `LLM_MAX_RETRIES`, `LLM_TIMEOUT_SECONDS` | Retries per model (with backoff) and the per-request timeout |
 | `REVIEWER_ACCOUNTS` | `user:password,user2:password2` |
 | `AUTH_SECRET` | HMAC secret for session tokens (12-hour expiry) |
 | `MAX_ANALYSIS_RUNS_PER_HOUR` | Protects the LLM budget on a public deployment |
@@ -312,8 +324,9 @@ All configuration is by environment variable; see `.env.example`.
 
 Provider examples:
 
-- **Google Gemini** (default, free tier): `LLM_PROVIDER=gemini`, `LLM_MODEL=gemini-3.8-flash`. Uses Gemini's
-  OpenAI-compatible endpoint, so no extra SDK is needed.
+- **Google Gemini** (default, free tier): `LLM_PROVIDER=gemini`, `LLM_MODEL=gemini-3.8-flash`,
+  `LLM_FALLBACK_MODELS=gemini-3.7-flash,gemini-3.5-flash-lite`. Uses Gemini's OpenAI-compatible endpoint, so no
+  extra SDK is needed. This is the live configuration.
 - **Anthropic** (paid): `LLM_PROVIDER=anthropic`, `LLM_MODEL=claude-sonnet-5-5`.
 - **Groq** (free tier): `LLM_PROVIDER=openai`, `LLM_BASE_URL=https://api.groq.com/openai/v1`,
   `LLM_MODEL=llama-3.3-70b-versatile`.
@@ -330,6 +343,7 @@ Every log line is one JSON object on stdout, viewable in the Render logs. Main e
 - `agent_run_start` / `agent_run_end`: run_id, status, duration_ms
 - `agent_step`: run_id, case_id, step, status, duration_ms, error
 - `llm_call` / `llm_call_failed`: provider, model, latency_ms, tokens, attempt, retryable
+- `llm_model_fallback`: provider, from_model, to_model, error (a busy or retired model handed over to a backup)
 - `case_event`: case_id, event_type, actor
 - `adjustment_approved`: case_id, adjustment_id, amount
 
