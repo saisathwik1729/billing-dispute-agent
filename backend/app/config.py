@@ -31,6 +31,9 @@ class Settings:
     llm_base_url: str = field(default_factory=lambda: os.getenv("LLM_BASE_URL", ""))
     llm_timeout_s: float = field(default_factory=lambda: float(os.getenv("LLM_TIMEOUT_SECONDS", "90")))
     llm_max_retries: int = field(default_factory=lambda: int(os.getenv("LLM_MAX_RETRIES", "2")))
+    # Comma-separated backup models, tried in order when the main model is busy (429/5xx) or retired (404).
+    llm_fallback_models: list[str] = field(default_factory=lambda: [
+        m.strip() for m in os.getenv("LLM_FALLBACK_MODELS", "").split(",") if m.strip()])
     auth_secret: str = field(default_factory=lambda: os.getenv("AUTH_SECRET", "dev-only-change-me"))
     reviewer_accounts: dict[str, str] = field(
         default_factory=lambda: _accounts(os.getenv("REVIEWER_ACCOUNTS", "reviewer:reviewer-demo"))

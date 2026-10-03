@@ -18,9 +18,15 @@ from ..logging_setup import agent_log
 
 
 class LLMError(Exception):
-    def __init__(self, message: str, retryable: bool = False):
+    def __init__(self, message: str, retryable: bool = False, status: int | None = None):
         super().__init__(message)
         self.retryable = retryable
+        self.status = status
+
+    @property
+    def model_unavailable(self) -> bool:
+        """Busy, rate-limited or retired model: worth trying a backup model."""
+        return self.retryable or self.status == 404
 
 
 @dataclass
@@ -36,15 +42,30 @@ class LLMResponse:
 class BaseClient:
     provider = "base"
 
-    def __init__(self, model: str, timeout: float = 90, max_retries: int = 2):
+    def __init__(self, model: str, timeout: float = 90, max_retries: int = 2, fallback_models: list[str] | None = None):
         self.model = model
         self.timeout = timeout
         self.max_retries = max_retries
+        self.fallback_models = [m for m in (fallback_models or []) if m and m != model]
 
     def _call(self, system: str, messages: list[dict]) -> LLMResponse:  # pragma: no cover - abstract
         raise NotImplementedError
 
     def complete(self, system: str, messages: list[dict]) -> LLMResponse:
+        """Try the configured model, then each backup model if it is busy or retired."""
+        models = [self.model] + self.fallback_models
+        for i, model in enumerate(models):
+            self.model = model
+            try:
+                return self._complete_one(system, messages)
+            except LLMError as exc:
+                if i == len(models) - 1 or not exc.model_unavailable:
+                    raise
+                agent_log.warning("llm_model_fallback", extra={"provider": self.provider, "from_model": model,
+                                                               "to_model": models[i + 1], "error": str(exc)})
+        raise LLMError("No model configured")  # pragma: no cover
+
+    def _complete_one(self, system: str, messages: list[dict]) -> LLMResponse:
         attempt = 0
         while True:
             attempt += 1
@@ -65,7 +86,7 @@ class BaseClient:
                 err = LLMError(f"{self.provider} network error: {exc}", retryable=True)
             except LLMError as exc:
                 err = exc
-            agent_log.warning("llm_call_failed", extra={"provider": self.provider, "attempt": attempt,
+            agent_log.warning("llm_call_failed", extra={"provider": self.provider, "model": self.model, "attempt": attempt,
                                                         "error": str(err), "retryable": err.retryable})
             if not err.retryable or attempt > self.max_retries:
                 raise err
@@ -78,8 +99,9 @@ class BaseClient:
         body = resp.text[:300]
         retryable = resp.status_code in (408, 409, 425, 429) or resp.status_code >= 500
         if resp.status_code in (401, 403):
-            raise LLMError(f"{provider} rejected the API key (HTTP {resp.status_code})")
-        raise LLMError(f"{provider} returned HTTP {resp.status_code}: {body}", retryable=retryable)
+            raise LLMError(f"{provider} rejected the API key (HTTP {resp.status_code})", status=resp.status_code)
+        raise LLMError(f"{provider} returned HTTP {resp.status_code}: {body}", retryable=retryable,
+                       status=resp.status_code)
 
 
 class AnthropicClient(BaseClient):
@@ -160,7 +182,8 @@ class MockClient(BaseClient):
 
 def get_client(cfg: Settings | None = None) -> BaseClient:
     cfg = cfg or default_settings
-    kw = {"timeout": cfg.llm_timeout_s, "max_retries": cfg.llm_max_retries}
+    kw = {"timeout": cfg.llm_timeout_s, "max_retries": cfg.llm_max_retries,
+          "fallback_models": cfg.llm_fallback_models}
     if cfg.llm_provider == "mock":
         return MockClient(model=cfg.resolved_model, **kw)
     if not cfg.llm_api_key:

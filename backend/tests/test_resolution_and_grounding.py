@@ -99,3 +99,34 @@ def test_provider_wiring_without_network():
     assert o.provider == "openai" and o.url == "https://api.groq.com/openai/v1/chat/completions"
     with pytest.raises(LLMError):
         get_client(Settings(llm_provider="gemini", llm_api_key=""))
+
+
+def test_backup_models_used_when_main_model_busy_or_retired():
+    from app.agent.llm import BaseClient, LLMError, LLMResponse
+
+    class Scripted(BaseClient):
+        provider = "test"
+
+        def __init__(self, failures, **kw):
+            super().__init__("main", max_retries=0, **kw)
+            self.failures, self.tried = failures, []
+
+        def _call(self, system, messages):
+            self.tried.append(self.model)
+            if self.model in self.failures:
+                raise self.failures[self.model]
+            return LLMResponse(text="{}", model=self.model)
+
+    busy = Scripted({"main": LLMError("503 busy", retryable=True, status=503)}, fallback_models=["backup"])
+    assert busy.complete("s", []).model == "backup" and busy.tried == ["main", "backup"]
+    retired = Scripted({"main": LLMError("404", status=404)}, fallback_models=["backup"])
+    assert retired.complete("s", []).model == "backup"
+    bad_key = Scripted({"main": LLMError("401", status=401)}, fallback_models=["backup"])
+    with pytest.raises(LLMError):
+        bad_key.complete("s", [])
+    assert bad_key.tried == ["main"]  # a bad key is not a model problem; no point trying backups
+    all_busy = Scripted({m: LLMError("503", retryable=True, status=503) for m in ("main", "b1", "b2")},
+                        fallback_models=["b1", "b2"])
+    with pytest.raises(LLMError):
+        all_busy.complete("s", [])
+    assert all_busy.tried == ["main", "b1", "b2"]

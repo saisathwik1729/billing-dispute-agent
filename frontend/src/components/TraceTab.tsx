@@ -13,12 +13,23 @@ export default function TraceTab({ detail, liveRun }: { detail: CaseDetail; live
   const [error, setError] = useState<unknown>(null);
   const [raw, setRaw] = useState<string | null>(null);
 
+  // Follow a run that is in progress, so its steps appear live.
+  useEffect(() => {
+    if (liveRun) setSelected(liveRun.id);
+  }, [liveRun?.id]);
+
+  // Load a run only when a different run is selected (not on every progress poll).
   useEffect(() => {
     if (!selected) return;
-    if (liveRun && liveRun.id === selected && liveRun.steps) { setRun(liveRun); return; }
+    if (liveRun && liveRun.id === selected && liveRun.steps) return;
     setRun(null);
     api<Run>(`/api/runs/${selected}`).then(setRun).catch(setError);
-  }, [selected, liveRun]);
+  }, [selected]);
+
+  // Keep the live run's steps up to date as they arrive.
+  useEffect(() => {
+    if (liveRun && liveRun.id === selected && liveRun.steps) setRun(liveRun);
+  }, [liveRun, selected]);
 
   if (!detail.runs.length) return <Empty title="No runs yet"><p>Each analysis run records every tool step it took, how long it took, and what failed.</p></Empty>;
   const analysis = detail.analyses.find((a) => detail.latest_analysis && a.id === detail.latest_analysis.id);
