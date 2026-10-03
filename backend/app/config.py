@@ -46,7 +46,7 @@ class Settings:
         if self.llm_model:
             return self.llm_model
         return {
-            "gemini": "gemini-2.5-flash",
+            "gemini": "gemini-3.8-flash",
             "anthropic": "claude-sonnet-5-5",
             "openai": "gpt-4o-mini",
             "mock": "mock-analyst",

@@ -92,7 +92,7 @@ def test_provider_wiring_without_network():
 
     g = get_client(Settings(llm_provider="gemini", llm_api_key="k", llm_model=""))
     assert isinstance(g, OpenAICompatibleClient) and g.provider == "gemini"
-    assert g.model == "gemini-2.5-flash" and g.url == GEMINI_OPENAI_BASE_URL + "/chat/completions"
+    assert g.model == "gemini-3.8-flash" and g.url == GEMINI_OPENAI_BASE_URL + "/chat/completions"
     assert isinstance(get_client(Settings(llm_provider="anthropic", llm_api_key="k")), AnthropicClient)
     o = get_client(Settings(llm_provider="openai", llm_api_key="k", llm_base_url="https://api.groq.com/openai/v1",
                             llm_model="llama-3.3-70b-versatile"))

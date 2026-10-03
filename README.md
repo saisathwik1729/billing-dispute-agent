@@ -312,7 +312,7 @@ All configuration is by environment variable; see `.env.example`.
 
 Provider examples:
 
-- **Google Gemini** (default, free tier): `LLM_PROVIDER=gemini`, `LLM_MODEL=gemini-2.5-flash`. Uses Gemini's
+- **Google Gemini** (default, free tier): `LLM_PROVIDER=gemini`, `LLM_MODEL=gemini-3.8-flash`. Uses Gemini's
   OpenAI-compatible endpoint, so no extra SDK is needed.
 - **Anthropic** (paid): `LLM_PROVIDER=anthropic`, `LLM_MODEL=claude-sonnet-5-5`.
 - **Groq** (free tier): `LLM_PROVIDER=openai`, `LLM_BASE_URL=https://api.groq.com/openai/v1`,
