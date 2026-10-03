@@ -1,0 +1,2 @@
+Invoice INV-2026-09-INI bills us for API traffic during your maintenance on September 9 and during the outage on September 18. Our contract says usage during maintenance windows is not billable, and an outage is surely maintenance too. We also saw a retry storm on September 27 that we believe double-counted calls. We would like all of this removed from the invoice.
+- Morgan Lee, Engineering Manager, Initech Systems

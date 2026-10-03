@@ -1,0 +1,29 @@
+{
+  "key": "globex-seat-proration",
+  "title": "Mid-month seats billed for the full month",
+  "customer_name": "Globex Health",
+  "summary": "Seat proration error, an $80 credit already issued, and a minimum-commitment true-up.",
+  "files": [
+    [
+      "invoice",
+      "invoice.json"
+    ],
+    [
+      "contract",
+      "contract.json"
+    ],
+    [
+      "usage",
+      "usage.csv"
+    ],
+    [
+      "payments",
+      "payments.json"
+    ],
+    [
+      "dispute",
+      "dispute.txt"
+    ]
+  ],
+  "followups": []
+}

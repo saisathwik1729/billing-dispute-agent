@@ -1,0 +1,145 @@
+{
+  "events": [
+    {
+      "event_id": "EV-3001",
+      "timestamp": "2026-09-01T08:00:00Z",
+      "sku": "API_CALLS",
+      "quantity": 11000,
+      "tags": []
+    },
+    {
+      "event_id": "EV-3002",
+      "timestamp": "2026-09-02T09:00:00Z",
+      "sku": "API_CALLS",
+      "quantity": 9500,
+      "tags": []
+    },
+    {
+      "event_id": "EV-3003",
+      "timestamp": "2026-09-03T10:00:00Z",
+      "sku": "API_CALLS",
+      "quantity": 12500,
+      "tags": []
+    },
+    {
+      "event_id": "EV-3004",
+      "timestamp": "2026-09-04T11:00:00Z",
+      "sku": "API_CALLS",
+      "quantity": 10000,
+      "tags": []
+    },
+    {
+      "event_id": "EV-3007",
+      "timestamp": "2026-09-05T12:00:00Z",
+      "sku": "API_CALLS",
+      "quantity": 13000,
+      "tags": []
+    },
+    {
+      "event_id": "EV-3008",
+      "timestamp": "2026-09-06T13:00:00Z",
+      "sku": "API_CALLS",
+      "quantity": 8500,
+      "tags": []
+    },
+    {
+      "event_id": "EV-3009",
+      "timestamp": "2026-09-08T14:00:00Z",
+      "sku": "API_CALLS",
+      "quantity": 11500,
+      "tags": []
+    },
+    {
+      "event_id": "EV-3005",
+      "timestamp": "2026-09-09T02:00:00Z",
+      "sku": "API_CALLS",
+      "quantity": 6000,
+      "tags": [
+        "scheduled_maintenance"
+      ]
+    },
+    {
+      "event_id": "EV-3006",
+      "timestamp": "2026-09-09T03:00:00Z",
+      "sku": "API_CALLS",
+      "quantity": 4000,
+      "tags": [
+        "scheduled_maintenance"
+      ]
+    },
+    {
+      "event_id": "EV-3010",
+      "timestamp": "2026-09-10T15:00:00Z",
+      "sku": "API_CALLS",
+      "quantity": 12000,
+      "tags": []
+    },
+    {
+      "event_id": "EV-3011",
+      "timestamp": "2026-09-11T16:00:00Z",
+      "sku": "API_CALLS",
+      "quantity": 9000,
+      "tags": []
+    },
+    {
+      "event_id": "EV-3013",
+      "timestamp": "2026-09-13T08:00:00Z",
+      "sku": "API_CALLS",
+      "quantity": 10500,
+      "tags": []
+    },
+    {
+      "event_id": "EV-3014",
+      "timestamp": "2026-09-15T09:00:00Z",
+      "sku": "API_CALLS",
+      "quantity": 14000,
+      "tags": []
+    },
+    {
+      "event_id": "EV-3015",
+      "timestamp": "2026-09-17T10:00:00Z",
+      "sku": "API_CALLS",
+      "quantity": 7500,
+      "tags": []
+    },
+    {
+      "event_id": "EV-3012",
+      "timestamp": "2026-09-18T14:20:00Z",
+      "sku": "API_CALLS",
+      "quantity": 12000,
+      "tags": [
+        "emergency_maintenance"
+      ]
+    },
+    {
+      "event_id": "EV-3016",
+      "timestamp": "2026-09-22T11:00:00Z",
+      "sku": "API_CALLS",
+      "quantity": 12000,
+      "tags": []
+    },
+    {
+      "event_id": "EV-3017",
+      "timestamp": "2026-09-25T12:00:00Z",
+      "sku": "API_CALLS",
+      "quantity": 9000,
+      "tags": []
+    },
+    {
+      "event_id": "EV-3020",
+      "timestamp": "2026-09-27T11:45:00Z",
+      "sku": "API_CALLS",
+      "quantity": 4000,
+      "tags": []
+    },
+    {
+      "event_id": "EV-3021",
+      "timestamp": "2026-09-27T11:45:00Z",
+      "sku": "API_CALLS",
+      "quantity": 4000,
+      "tags": [
+        "retry"
+      ]
+    }
+  ]
+}

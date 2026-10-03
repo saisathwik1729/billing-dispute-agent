@@ -1,0 +1,46 @@
+{
+  "contract_id": "CTR-INI-2026",
+  "customer": "Initech Systems",
+  "currency": "USD",
+  "rules": [
+    {
+      "id": "R1",
+      "type": "tiered",
+      "sku": "API_CALLS",
+      "text": "API calls: up to 50,000 calls at $0.0200; up to 200,000 calls at $0.0150; above 200,000 calls at $0.0100.",
+      "tiers": [
+        {
+          "up_to": 50000,
+          "unit_price": "0.0200"
+        },
+        {
+          "up_to": 200000,
+          "unit_price": "0.0150"
+        },
+        {
+          "up_to": null,
+          "unit_price": "0.0100"
+        }
+      ]
+    },
+    {
+      "id": "R2",
+      "type": "usage_exclusion",
+      "sku": "API_CALLS",
+      "exclude_tags": [
+        "scheduled_maintenance"
+      ],
+      "disputed_tags": [
+        "emergency_maintenance"
+      ],
+      "text": "Usage incurred during maintenance windows is not billable. Scheduled maintenance windows are announced at least 72 hours in advance."
+    },
+    {
+      "id": "R3",
+      "type": "flat",
+      "sku": "PLATFORM_FEE",
+      "amount": "250.00",
+      "text": "Platform fee: $250.00 per month."
+    }
+  ]
+}

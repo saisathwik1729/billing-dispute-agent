@@ -1,0 +1,29 @@
+{
+  "key": "acme-api-overage",
+  "title": "API overage and missing loyalty discount",
+  "customer_name": "Acme Logistics",
+  "summary": "Duplicate meter events, a stray July event and a missing 10% discount.",
+  "files": [
+    [
+      "invoice",
+      "invoice.json"
+    ],
+    [
+      "contract",
+      "contract.json"
+    ],
+    [
+      "usage",
+      "usage.json"
+    ],
+    [
+      "payments",
+      "payments.json"
+    ],
+    [
+      "dispute",
+      "dispute.txt"
+    ]
+  ],
+  "followups": []
+}

@@ -1,0 +1,12 @@
+{
+  "entries": [
+    {
+      "id": "PAY-INI-1004",
+      "type": "payment",
+      "date": "2026-10-02",
+      "amount": "2950.00",
+      "invoice_id": "INV-2026-09-INI",
+      "reason": "Card payment"
+    }
+  ]
+}

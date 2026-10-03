@@ -1,0 +1,6 @@
+From: Sam Patel (Account Manager)
+To: Morgan Lee
+Date: 2026-03-02
+Subject: Re: API pricing question
+
+Hi Morgan, confirming what we discussed: your API pricing works on a volume basis. Once your monthly calls pass 50,000, all calls that month are billed at the $0.0150 rate (and at $0.0100 once you pass 200,000).

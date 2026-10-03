@@ -1,0 +1,36 @@
+{
+  "key": "initech-maintenance-tiers",
+  "title": "Maintenance-window usage and unclear tier pricing",
+  "customer_name": "Initech Systems",
+  "summary": "Ambiguous tier mode, a vague maintenance clause, possible duplicate events and no payment history.",
+  "files": [
+    [
+      "invoice",
+      "invoice.json"
+    ],
+    [
+      "contract",
+      "contract.json"
+    ],
+    [
+      "usage",
+      "usage.json"
+    ],
+    [
+      "dispute",
+      "dispute.txt"
+    ]
+  ],
+  "followups": [
+    [
+      "payments",
+      "payments.json",
+      "Payment history from the billing system"
+    ],
+    [
+      "note",
+      "account-manager-email.txt",
+      "Account manager's email about tier pricing"
+    ]
+  ]
+}

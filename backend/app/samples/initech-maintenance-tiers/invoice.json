@@ -1,0 +1,29 @@
+{
+  "invoice_id": "INV-2026-09-INI",
+  "customer": "Initech Systems",
+  "currency": "USD",
+  "issued_at": "2026-10-01",
+  "period": {
+    "start": "2026-09-01",
+    "end": "2026-09-30"
+  },
+  "lines": [
+    {
+      "line_id": "L1",
+      "sku": "API_CALLS",
+      "description": "API calls",
+      "quantity": 180000,
+      "unit_price": "0.0150",
+      "amount": "2700.00"
+    },
+    {
+      "line_id": "L2",
+      "sku": "PLATFORM_FEE",
+      "description": "Platform fee",
+      "quantity": 1,
+      "unit_price": "250.00",
+      "amount": "250.00"
+    }
+  ],
+  "total": "2950.00"
+}

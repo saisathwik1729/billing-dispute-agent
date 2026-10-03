@@ -1,0 +1,2 @@
+Our August invoice INV-2026-08-ACME bills 283,000 API calls, but our own gateway logs show roughly 260,000 calls for August. On top of that, the 10% loyalty discount we negotiated at renewal is not on the invoice at all. We also deleted most of our stored data on August 20, so we don't think we should pay storage overage for the whole month. Please correct the invoice and credit the difference.
+- Priya Nair, Finance Manager, Acme Logistics

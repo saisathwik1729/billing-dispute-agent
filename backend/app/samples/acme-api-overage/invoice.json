@@ -1,0 +1,36 @@
+{
+  "invoice_id": "INV-2026-08-ACME",
+  "customer": "Acme Logistics",
+  "currency": "USD",
+  "issued_at": "2026-09-01",
+  "period": {
+    "start": "2026-08-01",
+    "end": "2026-08-31"
+  },
+  "lines": [
+    {
+      "line_id": "L1",
+      "sku": "PLATFORM_FEE",
+      "description": "Platform access fee",
+      "quantity": 1,
+      "unit_price": "500.00",
+      "amount": "500.00"
+    },
+    {
+      "line_id": "L2",
+      "sku": "API_CALLS",
+      "description": "API calls (graduated tiers)",
+      "quantity": 283000,
+      "amount": "2464.00"
+    },
+    {
+      "line_id": "L3",
+      "sku": "STORAGE_GB",
+      "description": "Storage overage (GB above 500)",
+      "quantity": 120,
+      "unit_price": "0.25",
+      "amount": "30.00"
+    }
+  ],
+  "total": "2994.00"
+}

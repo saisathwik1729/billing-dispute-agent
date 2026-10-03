@@ -1,0 +1,12 @@
+{
+  "entries": [
+    {
+      "id": "PAY-ACME-0905",
+      "type": "payment",
+      "date": "2026-09-05",
+      "amount": "2994.00",
+      "invoice_id": "INV-2026-08-ACME",
+      "reason": "ACH payment"
+    }
+  ]
+}

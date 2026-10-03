@@ -1,0 +1,15 @@
+{
+  "entries": [
+    {
+      "id": "CR-GLX-0928",
+      "type": "credit",
+      "date": "2026-10-01",
+      "amount": "80.00",
+      "invoice_id": "INV-2026-09-GLX",
+      "applies_to_lines": [
+        "L1"
+      ],
+      "reason": "Goodwill credit issued by support agent pending billing investigation"
+    }
+  ]
+}

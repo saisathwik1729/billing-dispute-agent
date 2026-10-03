@@ -1,0 +1,59 @@
+{
+  "contract_id": "CTR-ACME-2026",
+  "customer": "Acme Logistics",
+  "currency": "USD",
+  "rules": [
+    {
+      "id": "R1",
+      "type": "flat",
+      "sku": "PLATFORM_FEE",
+      "amount": "500.00",
+      "text": "Platform access fee of $500.00 per month."
+    },
+    {
+      "id": "R2",
+      "type": "tiered",
+      "sku": "API_CALLS",
+      "tier_mode": "graduated",
+      "text": "API calls are billed on graduated tiers: the first 100,000 calls at $0.0100, calls 100,001-500,000 at $0.0080, and calls above 500,000 at $0.0060.",
+      "tiers": [
+        {
+          "up_to": 100000,
+          "unit_price": "0.0100"
+        },
+        {
+          "up_to": 500000,
+          "unit_price": "0.0080"
+        },
+        {
+          "up_to": null,
+          "unit_price": "0.0060"
+        }
+      ]
+    },
+    {
+      "id": "R3",
+      "type": "included_quota",
+      "sku": "STORAGE_GB",
+      "included": 500,
+      "overage_unit_price": "0.25",
+      "measure": "max",
+      "text": "500 GB of storage is included. Storage above 500 GB is billed at $0.25 per GB, measured at the peak daily storage in the billing month."
+    },
+    {
+      "id": "R4",
+      "type": "discount_percent",
+      "sku": "DISCOUNT_API_LOYALTY",
+      "percent": "10",
+      "applies_to": [
+        "API_CALLS"
+      ],
+      "text": "Renewal loyalty discount: 10% off API call charges for the 2026 contract year."
+    },
+    {
+      "id": "R5",
+      "type": "clause",
+      "text": "Billing disputes must be raised within 30 days of the invoice date."
+    }
+  ]
+}

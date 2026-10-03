@@ -1,0 +1,29 @@
+{
+  "invoice_id": "INV-2026-09-GLX",
+  "customer": "Globex Health",
+  "currency": "USD",
+  "issued_at": "2026-10-01",
+  "period": {
+    "start": "2026-09-01",
+    "end": "2026-09-30"
+  },
+  "lines": [
+    {
+      "line_id": "L1",
+      "sku": "SEATS",
+      "description": "User seats",
+      "quantity": 30,
+      "unit_price": "40.00",
+      "amount": "1200.00"
+    },
+    {
+      "line_id": "L2",
+      "sku": "SUPPORT_PREMIUM",
+      "description": "Premium support",
+      "quantity": 1,
+      "unit_price": "300.00",
+      "amount": "300.00"
+    }
+  ],
+  "total": "1500.00"
+}

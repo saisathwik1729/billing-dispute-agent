@@ -1,0 +1,30 @@
+{
+  "contract_id": "CTR-GLX-2025",
+  "customer": "Globex Health",
+  "currency": "USD",
+  "rules": [
+    {
+      "id": "R1",
+      "type": "per_unit",
+      "sku": "SEATS",
+      "unit_price": "40.00",
+      "measure": "snapshot",
+      "proration": "daily",
+      "text": "User seats are $40.00 per seat per month. Seats added or removed during a month are prorated daily."
+    },
+    {
+      "id": "R2",
+      "type": "flat",
+      "sku": "SUPPORT_PREMIUM",
+      "amount": "300.00",
+      "text": "Premium support: $300.00 per month."
+    },
+    {
+      "id": "R3",
+      "type": "minimum_commit",
+      "sku": "MIN_COMMIT_TRUEUP",
+      "amount": "1500.00",
+      "text": "Customer commits to a minimum monthly spend of $1,500.00. If monthly charges are below the minimum, the difference is invoiced as a true-up."
+    }
+  ]
+}
